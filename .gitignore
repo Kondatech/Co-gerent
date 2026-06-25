@@ -1,0 +1,14 @@
+﻿__pycache__/
+*.pyc
+.env
+venv/
+node_modules/
+static/css/output.css
+db.sqlite3
+media/
+staticfiles/
+*.log
+.pytest_cache/
+.vscode/
+.idea/
+.DS_Store

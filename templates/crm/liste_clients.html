@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Liste des clients - Co-Gerant{% endblock %}
+
+{% block content %}
+<div class="max-w-[1440px] mx-auto px-6 py-8">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <h4 class="font-bold text-2xl text-gray-900 flex items-center gap-3">
+            <i class="fas fa-users text-primary"></i>
+            Mes clients
+            <span class="badge-status info text-sm px-3 py-1">{{ total_clients }}</span>
+        </h4>
+        <div class="flex items-center gap-2">
+            <a href="{% url 'crm:importer_clients' %}" class="btn-glass text-sm py-2 px-4">
+                <i class="fas fa-file-import mr-2"></i>Importer
+            </a>
+            <a href="{% url 'crm:nouveau_client' %}" class="btn-glass-primary text-sm py-2 px-4">
+                <i class="fas fa-plus mr-2"></i>Nouveau client
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtres et recherche -->
+    <div class="glass-card p-4 mb-6">
+        <form method="GET" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            <div class="lg:col-span-1">
+                <input type="text" name="search" class="form-glass w-full text-sm" placeholder="Rechercher..." value="{{ search }}">
+            </div>
+            <div>
+                <select name="segment" class="form-glass-select w-full text-sm">
+                    <option value="">Tous les segments</option>
+                    {% for value, label in segments %}
+                        <option value="{{ value }}" {% if segment == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <select name="statut" class="form-glass-select w-full text-sm">
+                    <option value="">Tous les statuts</option>
+                    <option value="actif" {% if statut == 'actif' %}selected{% endif %}>Actifs</option>
+                    <option value="inactif" {% if statut == 'inactif' %}selected{% endif %}>Inactifs</option>
+                </select>
+            </div>
+            <div>
+                <select name="tri" class="form-glass-select w-full text-sm">
+                    <option value="-date_creation" {% if tri == '-date_creation' %}selected{% endif %}>Plus recents</option>
+                    <option value="date_creation" {% if tri == 'date_creation' %}selected{% endif %}>Plus anciens</option>
+                    <option value="-montant_total_achats" {% if tri == '-montant_total_achats' %}selected{% endif %}>CA total</option>
+                    <option value="-score_rfm" {% if tri == '-score_rfm' %}selected{% endif %}>RFM</option>
+                    <option value="nom" {% if tri == 'nom' %}selected{% endif %}>Nom</option>
+                </select>
+            </div>
+            <div>
+                <button type="submit" class="btn-glass-primary w-full text-sm py-2.5">
+                    <i class="fas fa-search mr-2"></i>Filtrer
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Statistiques rapides -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="glass-card-light p-4 rounded-xl text-center hover:shadow-lg transition-all duration-300">
+            <div class="text-2xl font-extrabold text-gray-900">{{ total_clients }}</div>
+            <div class="text-sm text-gray-500 font-medium">Total clients</div>
+        </div>
+        <div class="glass-card-light p-4 rounded-xl text-center hover:shadow-lg transition-all duration-300">
+            <div class="text-2xl font-extrabold text-gray-900">{{ clients_actifs }}</div>
+            <div class="text-sm text-gray-500 font-medium">Clients actifs</div>
+        </div>
+        <div class="glass-card-light p-4 rounded-xl text-center hover:shadow-lg transition-all duration-300">
+            <div class="text-2xl font-extrabold text-gray-900">{{ total_clients|add:clients_actifs|add:"-"|cut:"-" }}</div>
+            <div class="text-sm text-gray-500 font-medium">Clients inactifs</div>
+        </div>
+    </div>
+
+    <!-- Liste des clients -->
+    <div class="glass-card overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50/50">
+                    <tr>
+                        <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Nom</th>
+                        <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
+                        <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Telephone</th>
+                        <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Segment</th>
+                        <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">RFM</th>
+                        <th class="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">CA total</th>
+                        <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Statut</th>
+                        <th class="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for client in clients %}
+                    <tr class="hover:bg-gray-50/50 transition-colors">
+                        <td class="px-6 py-3">
+                            <a href="{% url 'crm:detail_client' client.id %}" class="text-primary font-semibold hover:underline">
+                                {{ client.nom }}
+                            </a>
+                        </td>
+                        <td class="px-6 py-3 text-gray-600">{{ client.email|default:"-" }}</td>
+                        <td class="px-6 py-3 text-gray-600">{{ client.telephone|default:"-" }}</td>
+                        <td class="px-6 py-3">
+                            <span class="badge-status 
+                                {% if client.segment == 'PREMIUM' %}success
+                                {% elif client.segment == 'STANDARD' %}info
+                                {% else %}neutral{% endif %}">
+                                {{ client.get_segment_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-3">
+                            <span class="badge-status 
+                                {% if client.score_rfm >= 800 %}success
+                                {% elif client.score_rfm >= 600 %}info
+                                {% elif client.score_rfm >= 400 %}warning
+                                {% else %}danger{% endif %}">
+                                {{ client.score_rfm }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-3 text-right font-semibold text-gray-900">{{ client.montant_total_achats|floatformat:0 }} FCFA</td>
+                        <td class="px-6 py-3">
+                            {% if client.est_actif %}
+                                <span class="badge-status success">Actif</span>
+                            {% else %}
+                                <span class="badge-status neutral">Inactif</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-3 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="{% url 'crm:detail_client' client.id %}" class="text-gray-400 hover:text-primary transition-colors">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'crm:modifier_client' client.id %}" class="text-gray-400 hover:text-primary transition-colors">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="px-6 py-8 text-center text-gray-400">
+                            Aucun client trouve
+                            {% if search %}
+                                pour la recherche "{{ search }}"
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if paginator.num_pages > 1 %}
+    <div class="flex items-center justify-between mt-6">
+        <p class="text-sm text-gray-500">
+            Page <span class="font-semibold text-gray-900">{{ clients.number }}</span>
+            sur <span class="font-semibold text-gray-900">{{ paginator.num_pages }}</span>
+        </p>
+        <div class="flex items-center gap-2">
+            {% if clients.has_previous %}
+                <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                   class="btn-glass text-sm py-1.5 px-3">
+                    <i class="fas fa-chevron-double-left"></i>
+                </a>
+                <a href="?page={{ clients.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                   class="btn-glass text-sm py-1.5 px-3">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            {% endif %}
+
+            <span class="btn-glass-primary text-sm py-1.5 px-4 cursor-default">
+                {{ clients.number }}
+            </span>
+
+            {% if clients.has_next %}
+                <a href="?page={{ clients.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                   class="btn-glass text-sm py-1.5 px-3">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+                <a href="?page={{ paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                   class="btn-glass text-sm py-1.5 px-3">
+                    <i class="fas fa-chevron-double-right"></i>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

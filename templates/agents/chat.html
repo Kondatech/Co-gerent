@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Assistant IA - Co-Gerant{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-6">
+    <div class="glass-card p-0 overflow-hidden">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50/50">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-primary-soft text-primary-dark flex items-center justify-center">
+                    <i class="fas fa-robot text-lg"></i>
+                </div>
+                <div>
+                    <span class="font-bold text-gray-900 text-sm" id="agentActif">Assistant Co-Gerant</span>
+                    <p class="text-xs text-gray-400">En ligne</p>
+                </div>
+            </div>
+            <span class="badge-status success text-xs">
+                <i class="fas fa-circle mr-1" style="font-size: 0.3rem;"></i>Actif
+            </span>
+        </div>
+        
+        <!-- Messages -->
+        <div class="h-[60vh] overflow-y-auto p-6 space-y-3 bg-gray-50/30" id="chatMessages">
+            <!-- Welcome message -->
+            <div class="flex items-start gap-3 animate-fade-in">
+                <div class="w-8 h-8 rounded-full bg-primary-soft text-primary-dark flex items-center justify-center text-sm flex-shrink-0 mt-1">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="chat-bubble-assistant max-w-[80%]">
+                    <span class="agent-badge text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full inline-block mb-1">Assistant</span>
+                    <div class="text-sm text-gray-700 space-y-2">
+                        <p>Bonjour ! Je suis votre copilote IA. Je peux vous aider avec :</p>
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2 text-sm">
+                                <i class="fas fa-users text-success text-xs w-4"></i>
+                                <span><strong>CRM</strong> : Gerer vos clients, segments RFM, relances</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-sm">
+                                <i class="fas fa-chart-simple text-info text-xs w-4"></i>
+                                <span><strong>Ventes</strong> : Analyser votre CA, previsions, performances</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-sm">
+                                <i class="fas fa-bullhorn text-warning text-xs w-4"></i>
+                                <span><strong>Communication</strong> : Generer des messages de relance</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-sm">
+                                <i class="fas fa-lightbulb text-primary text-xs w-4"></i>
+                                <span><strong>Decision</strong> : Recommendations strategiques</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-400 text-xs mt-2">Posez-moi une question ou utilisez les suggestions ci-dessous.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Suggestions -->
+        <div class="flex flex-wrap gap-2 px-6 py-3 border-t border-gray-200 bg-gray-50/30">
+            <button class="suggestion-chip text-xs px-3 py-1.5 rounded-full border border-gray-200 hover:border-primary hover:bg-primary-soft transition-all duration-200" onclick="envoyerMessage('Quels sont mes meilleurs clients ?')">
+                <i class="fas fa-users mr-1"></i>Meilleurs clients
+            </button>
+            <button class="suggestion-chip text-xs px-3 py-1.5 rounded-full border border-gray-200 hover:border-primary hover:bg-primary-soft transition-all duration-200" onclick="envoyerMessage('Quels clients dois-je relancer ?')">
+                <i class="fas fa-phone mr-1"></i>Clients a relancer
+            </button>
+            <button class="suggestion-chip text-xs px-3 py-1.5 rounded-full border border-gray-200 hover:border-primary hover:bg-primary-soft transition-all duration-200" onclick="envoyerMessage('Quel est mon chiffre d\'affaires du mois ?')">
+                <i class="fas fa-chart-simple mr-1"></i>CA du mois
+            </button>
+            <button class="suggestion-chip text-xs px-3 py-1.5 rounded-full border border-gray-200 hover:border-primary hover:bg-primary-soft transition-all duration-200" onclick="envoyerMessage('Donne-moi un aperçu de mes ventes')">
+                <i class="fas fa-shopping-cart mr-1"></i>Apercu ventes
+            </button>
+            <button class="suggestion-chip text-xs px-3 py-1.5 rounded-full border border-gray-200 hover:border-primary hover:bg-primary-soft transition-all duration-200" onclick="envoyerMessage('comment augmenter mes ventes')">
+                <i class="fas fa-lightbulb mr-1"></i>Augmenter mes ventes
+            </button>
+        </div>
+        
+        <!-- Input -->
+        <div class="px-6 py-4 border-t border-gray-200 bg-white">
+            <div class="flex items-center gap-2">
+                <input type="text" id="messageInput" 
+                       class="flex-1 bg-gray-50 border border-gray-200 rounded-full px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+                       placeholder="Posez votre question..." 
+                       onkeypress="if(event.key==='Enter') envoyerMessage()">
+                <button onclick="envoyerMessage()" id="sendBtn" 
+                        class="btn-glass-primary px-5 py-2.5 text-sm font-semibold rounded-full flex items-center gap-2">
+                    <i class="fas fa-paper-plane"></i> Envoyer
+                </button>
+            </div>
+            <div class="typing-indicator hidden items-center gap-2 mt-2 text-sm text-gray-400" id="typingIndicator">
+                <span>L'assistant reflechit</span>
+                <span class="flex gap-1">
+                    <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-typing-bounce" style="animation-delay: 0s;"></span>
+                    <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-typing-bounce" style="animation-delay: 0.2s;"></span>
+                    <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-typing-bounce" style="animation-delay: 0.4s;"></span>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .typing-indicator.active {
+        display: flex !important;
+    }
+    .animate-typing-bounce {
+        animation: typingBounce 1.4s ease-in-out infinite;
+    }
+    @keyframes typingBounce {
+        0%, 60%, 100% { transform: translateY(0); }
+        30% { transform: translateY(-6px); }
+    }
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+{% block extra_js %}
+<script>
+    let historiqueMessages = [];
+    const CSRF_TOKEN = '{{ csrf_token }}';
+    
+    async function envoyerMessage(message) {
+        const input = document.getElementById('messageInput');
+        const messageText = message || input.value.trim();
+        
+        if (!messageText) return;
+        
+        afficherMessage('user', messageText);
+        input.value = '';
+        input.focus();
+        
+        historiqueMessages.push({ role: 'user', content: messageText });
+        
+        document.getElementById('typingIndicator').classList.add('active');
+        document.getElementById('sendBtn').disabled = true;
+        
+        try {
+            const response = await fetch('{% url "agents:api_chat" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': CSRF_TOKEN
+                },
+                body: JSON.stringify({
+                    requete: messageText,
+                    historique: historiqueMessages
+                })
+            });
+            
+            const data = await response.json();
+            
+            document.getElementById('typingIndicator').classList.remove('active');
+            document.getElementById('sendBtn').disabled = false;
+            
+            if (data.reponse) {
+                let agentLabel = 'Assistant';
+                let agentClass = '';
+                if (data.agent === 'crm') {
+                    agentLabel = 'Agent CRM';
+                    agentClass = 'crm';
+                } else if (data.agent === 'ventes') {
+                    agentLabel = 'Agent Ventes';
+                    agentClass = 'ventes';
+                } else if (data.agent === 'communication') {
+                    agentLabel = 'Agent Communication';
+                    agentClass = 'communication';
+                } else if (data.agent === 'decision') {
+                    agentLabel = 'Agent Decision';
+                    agentClass = 'decision';
+                }
+                
+                afficherMessage('assistant', data.reponse, agentLabel, agentClass);
+                historiqueMessages.push({ role: 'assistant', content: data.reponse });
+                
+                if (data.notification_necessaire) {
+                    afficherNotification(data.notification_message);
+                }
+            } else if (data.erreur) {
+                afficherMessage('assistant', 'Erreur: ' + data.erreur, 'Erreur');
+            }
+            
+        } catch (error) {
+            document.getElementById('typingIndicator').classList.remove('active');
+            document.getElementById('sendBtn').disabled = false;
+            afficherMessage('assistant', 'Erreur de connexion. Veuillez reessayer.', 'Erreur');
+            console.error('Erreur:', error);
+        }
+    }
+    
+    function afficherMessage(type, contenu, agentLabel, agentClass) {
+        const container = document.getElementById('chatMessages');
+        const div = document.createElement('div');
+        div.className = `flex items-start gap-3 animate-fade-in`;
+        
+        if (type === 'user') {
+            div.className += ' justify-end';
+            div.innerHTML = `
+                <div class="chat-bubble-user max-w-[80%] bg-gray-900 text-white rounded-2xl rounded-br-sm px-4 py-2.5 text-sm">
+                    <div>${contenu.replace(/\n/g, '<br>')}</div>
+                </div>
+                <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-sm flex-shrink-0 mt-1">
+                    <i class="fas fa-user"></i>
+                </div>
+            `;
+        } else {
+            const badgeHTML = agentLabel ? `<span class="agent-badge text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full inline-block mb-1">${agentLabel}</span>` : '';
+            div.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-primary-soft text-primary-dark flex items-center justify-center text-sm flex-shrink-0 mt-1">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="chat-bubble-assistant max-w-[80%] bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm text-gray-700 shadow-sm">
+                    ${badgeHTML}
+                    <div>${contenu.replace(/\n/g, '<br>')}</div>
+                </div>
+            `;
+        }
+        
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+    }
+    
+    function afficherNotification(message) {
+        const container = document.querySelector('.max-w-4xl.mx-auto');
+        if (container) {
+            const alert = document.createElement('div');
+            alert.className = 'alert-glass alert-glass-warning p-4 mb-4 rounded-xl border-l-4 border-l-warning bg-warning-bg/20 text-sm flex items-center gap-3';
+            alert.innerHTML = `
+                <i class="fas fa-bell text-warning"></i>
+                <span class="flex-1">${message}</span>
+                <button type="button" class="text-gray-400 hover:text-gray-600" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            container.prepend(alert);
+            
+            setTimeout(() => {
+                if (alert.parentElement) alert.remove();
+            }, 10000);
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('messageInput').focus();
+    });
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,317 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Co-Gerant{% endblock %}
+
+{% block content %}
+<div class="max-w-[1440px] mx-auto px-6 py-8">
+    <!-- Header avec gradient -->
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/10 via-primary-soft/30 to-transparent p-8 mb-8 border border-primary/10">
+        <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <h1 class="text-3xl font-extrabold text-gray-900">Tableau de bord</h1>
+                <p class="text-gray-500 text-sm mt-1 flex items-center gap-2">
+                    <i class="fas fa-clock text-primary text-xs"></i>
+                    Bienvenue, {{ user.get_full_name|default:user.username }}
+                </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+                <span class="badge-status success text-sm px-4 py-2 flex items-center gap-2">
+                    <span class="w-2 h-2 bg-success rounded-full animate-pulse"></span>
+                    Connecte
+                </span>
+                <span class="badge-status info text-sm px-4 py-2 flex items-center gap-2">
+                    <i class="fas fa-building text-xs"></i>
+                    {{ entreprise.nom|default:"Aucune entreprise" }}
+                </span>
+            </div>
+        </div>
+        <div class="absolute -right-10 -top-10 w-40 h-40 bg-primary/5 rounded-full blur-2xl"></div>
+        <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-primary/5 rounded-full blur-2xl"></div>
+    </div>
+
+    {% if not entreprise %}
+    <div class="alert-glass alert-glass-warning p-5 text-base mb-6 rounded-xl border-l-4 border-l-warning">
+        <div class="flex items-center gap-3">
+            <i class="fas fa-exclamation-triangle text-warning text-lg"></i>
+            <span>Vous n'etes pas encore rattache a une entreprise.</span>
+            <a href="{% url 'core:onboarding' %}" class="text-primary font-semibold hover:underline ml-auto">Completez votre profil →</a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        <div class="glass-card p-5 hover:shadow-xl transition-all duration-300 group">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary-soft text-primary-dark flex items-center justify-center text-xl group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div>
+                    <div class="text-3xl font-extrabold text-gray-900">{{ total_clients|default:0 }}</div>
+                    <div class="text-sm text-gray-500 font-medium">Clients actifs</div>
+                </div>
+            </div>
+        </div>
+        <div class="glass-card p-5 hover:shadow-xl transition-all duration-300 group">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-info/20 to-info/10 text-info flex items-center justify-center text-xl group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div>
+                    <div class="text-3xl font-extrabold text-gray-900">{{ ca_mois|default:0|floatformat:0 }}</div>
+                    <div class="text-sm text-gray-500 font-medium">CA du mois (FCFA)</div>
+                </div>
+            </div>
+        </div>
+        <div class="glass-card p-5 hover:shadow-xl transition-all duration-300 group">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-gray-900 to-gray-700 text-white flex items-center justify-center text-xl group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div>
+                    <div class="text-3xl font-extrabold text-gray-900" id="dashboardNotifCount">{{ notifications_non_lues|default:0 }}</div>
+                    <div class="text-sm text-gray-500 font-medium">Notifications</div>
+                </div>
+            </div>
+        </div>
+        <div class="glass-card p-5 hover:shadow-xl transition-all duration-300 group">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-success/20 to-success/10 text-success flex items-center justify-center text-xl group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <div>
+                    <div class="text-3xl font-extrabold text-gray-900">{{ recommandations_count|default:0 }}</div>
+                    <div class="text-sm text-gray-500 font-medium">Recommandations</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left Column - 2/3 -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Welcome Card -->
+            <div class="glass-card-dark p-6 rounded-2xl relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 w-40 h-40 bg-primary/10 rounded-full blur-2xl"></div>
+                <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-primary/5 rounded-full blur-xl"></div>
+                <div class="relative z-10">
+                    <h6 class="font-bold text-white text-lg flex items-center gap-3">
+                        <i class="fas fa-hand-peace text-primary text-xl"></i>
+                        Bienvenue dans Co-Gerant !
+                    </h6>
+                    <p class="text-white/70 text-base mt-2 leading-relaxed max-w-2xl">
+                        {% if entreprise %}
+                        Votre entreprise <strong class="text-white font-semibold">{{ entreprise.nom }}</strong> est prete a etre pilotee par l'IA.
+                        {% else %}
+                        Configurez votre entreprise pour commencer a utiliser l'assistant.
+                        {% endif %}
+                        Selectionnez un agent ci-dessous pour interagir avec votre copilote.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="glass-card-light p-5 rounded-xl hover:shadow-xl transition-all duration-300 border border-transparent hover:border-primary/20 group">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary-soft text-primary-dark flex items-center justify-center text-lg group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h6 class="font-bold text-gray-900 text-base">Assistant IA</h6>
+                            <p class="text-gray-500 text-sm mt-1">Posez vos questions en langage naturel.</p>
+                            <a href="{% url 'agents:chat' %}" class="btn-glass-primary inline-block mt-3 px-5 py-2 text-sm font-semibold group-hover:shadow-lg transition-all duration-300">
+                                <i class="fas fa-comment mr-2"></i>Ouvrir le chat
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-card-light p-5 rounded-xl hover:shadow-xl transition-all duration-300 border border-transparent hover:border-primary/20 group">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-info/20 to-info/10 text-info flex items-center justify-center text-lg group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h6 class="font-bold text-gray-900 text-base">Notifications</h6>
+                            <p class="text-gray-500 text-sm mt-1">Consultez vos alertes et recommandations.</p>
+                            <a href="{% url 'notifications:centre' %}" class="btn-glass-primary inline-block mt-3 px-5 py-2 text-sm font-semibold group-hover:shadow-lg transition-all duration-300">
+                                <i class="fas fa-bell mr-2"></i>Voir les notifications
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity avec données réelles -->
+            <div class="glass-card p-6 rounded-2xl">
+                <div class="flex items-center justify-between mb-4">
+                    <h6 class="font-bold text-gray-900 text-base flex items-center gap-2">
+                        <i class="fas fa-clock text-primary"></i>
+                        Activite recente
+                    </h6>
+                    <span class="text-xs text-gray-400">Dernieres activites</span>
+                </div>
+                <div class="space-y-2">
+                    {% if activites_recentes %}
+                        {% for activite in activites_recentes %}
+                        <div class="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50/80 transition-all duration-200 border border-transparent hover:border-gray-200">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-{{ activite.couleur }}/20 to-{{ activite.couleur }}/10 text-{{ activite.couleur }}-dark flex items-center justify-center text-sm flex-shrink-0">
+                                <i class="fas {{ activite.icone }}"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900">{{ activite.titre }}</p>
+                                <p class="text-xs text-gray-500 truncate">{{ activite.description }}</p>
+                                <p class="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+                                    <i class="fas fa-clock text-[10px]"></i>
+                                    {{ activite.temps }}
+                                </p>
+                            </div>
+                            <span class="badge-status {{ activite.badge_couleur }} text-xs flex-shrink-0">
+                                {{ activite.badge }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-8">
+                            <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-inbox text-gray-300 text-2xl"></i>
+                            </div>
+                            <p class="text-gray-400 text-sm">Aucune activite recente</p>
+                            <p class="text-gray-400 text-xs">Commencez a ajouter des clients ou des ventes</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - 1/3 -->
+        <div class="space-y-6">
+            <!-- Profile Card -->
+            <div class="glass-card p-6 text-center rounded-2xl hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+                <div class="absolute top-0 left-0 right-0 h-20 bg-gradient-to-r from-primary/10 via-primary-soft/20 to-transparent"></div>
+                <div class="relative z-10">
+                    <div class="relative inline-block mt-2">
+                        <div class="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-primary-soft text-primary-dark flex items-center justify-center text-4xl mx-auto border-4 border-white shadow-lg">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span class="absolute bottom-0 right-0 w-5 h-5 bg-success rounded-full border-2 border-white shadow-sm"></span>
+                    </div>
+                    <h5 class="font-bold text-gray-900 text-lg mt-3">{{ user.get_full_name|default:user.username }}</h5>
+                    <p class="text-gray-500 text-sm">{{ user.get_role_display }}</p>
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <div class="flex justify-center gap-8 text-sm">
+                            <div>
+                                <span class="block text-gray-400 text-xs">Entreprise</span>
+                                <span class="font-semibold text-gray-900">{{ entreprise.nom|default:"Non definie" }}</span>
+                            </div>
+                            <div>
+                                <span class="block text-gray-400 text-xs">Role</span>
+                                <span class="font-semibold text-gray-900">{{ user.get_role_display }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agents -->
+            <div class="glass-card p-5 rounded-2xl hover:shadow-xl transition-all duration-300">
+                <h6 class="font-bold text-gray-900 text-sm mb-4 flex items-center gap-2">
+                    <i class="fas fa-cubes text-primary"></i>
+                    Agents disponibles
+                </h6>
+                <div class="space-y-2">
+                    <a href="{% url 'agents:chat' %}?agent=crm" class="btn-glass w-full text-left flex items-center gap-3 py-2.5 px-4 text-sm hover:border-primary transition-all duration-200 rounded-xl group">
+                        <span class="w-8 h-8 rounded-lg bg-success/10 text-success flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                            <i class="fas fa-users text-sm"></i>
+                        </span>
+                        <span class="font-medium">Agent CRM</span>
+                        <span class="ml-auto text-xs text-gray-400">Clients</span>
+                    </a>
+                    <a href="{% url 'agents:chat' %}?agent=ventes" class="btn-glass w-full text-left flex items-center gap-3 py-2.5 px-4 text-sm hover:border-primary transition-all duration-200 rounded-xl group">
+                        <span class="w-8 h-8 rounded-lg bg-info/10 text-info flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                            <i class="fas fa-chart-simple text-sm"></i>
+                        </span>
+                        <span class="font-medium">Agent Ventes</span>
+                        <span class="ml-auto text-xs text-gray-400">CA</span>
+                    </a>
+                    <a href="{% url 'agents:chat' %}?agent=communication" class="btn-glass w-full text-left flex items-center gap-3 py-2.5 px-4 text-sm hover:border-primary transition-all duration-200 rounded-xl group">
+                        <span class="w-8 h-8 rounded-lg bg-warning/10 text-warning flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                            <i class="fas fa-bullhorn text-sm"></i>
+                        </span>
+                        <span class="font-medium">Agent Communication</span>
+                        <span class="ml-auto text-xs text-gray-400">Messages</span>
+                    </a>
+                    <a href="{% url 'agents:chat' %}?agent=decision" class="btn-glass w-full text-left flex items-center gap-3 py-2.5 px-4 text-sm hover:border-primary transition-all duration-200 rounded-xl group">
+                        <span class="w-8 h-8 rounded-lg bg-primary/10 text-primary-dark flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                            <i class="fas fa-lightbulb text-sm"></i>
+                        </span>
+                        <span class="font-medium">Agent Decision</span>
+                        <span class="ml-auto text-xs text-gray-400">Strategie</span>
+                    </a>
+                </div>
+                <hr class="border-gray-200 my-4">
+                <a href="{% url 'agents:chat' %}" class="btn-glass-primary w-full text-center text-sm py-2.5 block font-semibold rounded-xl hover:shadow-lg transition-all duration-300">
+                    <i class="fas fa-comment mr-2"></i>Nouvelle conversation
+                </a>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="glass-card p-5 rounded-2xl hover:shadow-xl transition-all duration-300">
+                <h6 class="font-bold text-gray-900 text-sm mb-4 flex items-center gap-2">
+                    <i class="fas fa-link text-primary"></i>
+                    Liens rapides
+                </h6>
+                <div class="space-y-1.5">
+                    <a href="{% url 'notifications:centre' %}" class="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50/80 transition-all duration-200 group">
+                        <span class="flex items-center gap-3 text-sm text-gray-600 group-hover:text-gray-900">
+                            <i class="fas fa-bell text-gray-400 group-hover:text-primary transition-colors"></i>
+                            Notifications
+                        </span>
+                        <span class="badge-status danger text-xs" id="sidebarNotifBadge" style="display: none;">0</span>
+                    </a>
+                    <a href="{% url 'core:onboarding' %}" class="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-gray-50/80 transition-all duration-200 group">
+                        <i class="fas fa-building text-gray-400 group-hover:text-primary transition-colors"></i>
+                        <span class="text-sm text-gray-600 group-hover:text-gray-900">Profil entreprise</span>
+                    </a>
+                    <a href="{% url 'crm:liste_clients' %}" class="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-gray-50/80 transition-all duration-200 group">
+                        <i class="fas fa-users text-gray-400 group-hover:text-primary transition-colors"></i>
+                        <span class="text-sm text-gray-600 group-hover:text-gray-900">Gestion des clients</span>
+                    </a>
+                    <a href="{% url 'ventes:liste_ventes' %}" class="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-gray-50/80 transition-all duration-200 group">
+                        <i class="fas fa-shopping-cart text-gray-400 group-hover:text-primary transition-colors"></i>
+                        <span class="text-sm text-gray-600 group-hover:text-gray-900">Gestion des ventes</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateNotifCounters() {
+    fetch("{% url 'notifications:count' %}")
+        .then(response => response.json())
+        .then(data => {
+            const sidebarBadge = document.getElementById('sidebarNotifBadge');
+            if (sidebarBadge) {
+                if (data.non_lues > 0) {
+                    sidebarBadge.textContent = data.non_lues;
+                    sidebarBadge.style.display = 'inline-block';
+                } else {
+                    sidebarBadge.style.display = 'none';
+                }
+            }
+            
+            const dashboardCount = document.getElementById('dashboardNotifCount');
+            if (dashboardCount) {
+                dashboardCount.textContent = data.non_lues;
+            }
+        })
+        .catch(error => console.error('Erreur:', error));
+}
+
+document.addEventListener('DOMContentLoaded', updateNotifCounters);
+setInterval(updateNotifCounters, 30000);
+</script>
+{% endblock %}

@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Modifier vente {{ vente.numero_facture }} - Co-Gerant{% endblock %}
+
+{% block extra_css %}
+<style>
+    .ligne-vente {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid #E5E6E9;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        transition: all 0.2s;
+    }
+    .ligne-vente:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: #C7C9CE;
+    }
+    .total-ligne {
+        font-weight: 600;
+        color: #D6920F;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-8">
+    <div class="glass-card p-8 hover:shadow-lg transition-all duration-300">
+        <!-- Header -->
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 rounded-xl bg-primary-soft text-primary-dark flex items-center justify-center text-3xl mx-auto">
+                <i class="fas fa-edit"></i>
+            </div>
+            <h5 class="font-bold text-2xl text-gray-900 mt-4">Modifier vente {{ vente.numero_facture }}</h5>
+            <p class="text-gray-500 text-sm mt-1">Mettez a jour les informations de la vente</p>
+        </div>
+        
+        <form method="POST" id="venteForm">
+            {% csrf_token %}
+            {{ formset.management_form }}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="{{ form.client.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">Client</label>
+                    {{ form.client }}
+                    {% if form.client.errors %}
+                        <p class="text-danger text-xs mt-1">{{ form.client.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label for="{{ form.numero_facture.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">Numero de facture *</label>
+                    {{ form.numero_facture }}
+                    {% if form.numero_facture.errors %}
+                        <p class="text-danger text-xs mt-1">{{ form.numero_facture.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label for="{{ form.statut.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">Statut</label>
+                    {{ form.statut }}
+                    {% if form.statut.errors %}
+                        <p class="text-danger text-xs mt-1">{{ form.statut.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label for="{{ form.montant_total.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">Total (calcule automatiquement)</label>
+                    {{ form.montant_total }}
+                    {% if form.montant_total.errors %}
+                        <p class="text-danger text-xs mt-1">{{ form.montant_total.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label for="{{ form.description.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">Description</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <p class="text-danger text-xs mt-1">{{ form.description.errors }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <hr class="border-gray-200 my-6">
+            
+            <h6 class="font-bold text-gray-900 text-sm mb-4 flex items-center gap-2">
+                <i class="fas fa-box text-primary"></i>Produits
+            </h6>
+            
+            <div id="lignes-container" class="space-y-2">
+                {% for ligne_form in formset %}
+                    <div class="ligne-vente">
+                        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 items-end">
+                            <div class="sm:col-span-2">
+                                <label class="block text-gray-500 text-xs font-medium uppercase tracking-wider mb-1">Produit</label>
+                                {{ ligne_form.produit }}
+                            </div>
+                            <div>
+                                <label class="block text-gray-500 text-xs font-medium uppercase tracking-wider mb-1">Quantite</label>
+                                {{ ligne_form.quantite }}
+                            </div>
+                            <div>
+                                <label class="block text-gray-500 text-xs font-medium uppercase tracking-wider mb-1">Prix unitaire</label>
+                                {{ ligne_form.prix_unitaire }}
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div>
+                                    <label class="block text-gray-500 text-xs font-medium uppercase tracking-wider mb-1">Total</label>
+                                    <p class="total-ligne text-sm text-center">{{ ligne_form.instance.total_ligne|floatformat:0 }} FCFA</p>
+                                </div>
+                                {% if ligne_form.instance.pk %}
+                                    <div class="mt-5">
+                                        {{ ligne_form.DELETE }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <button type="button" class="btn-glass mt-3 text-sm" id="ajouter-ligne">
+                <i class="fas fa-plus mr-2"></i>Ajouter un produit
+            </button>
+            
+            <hr class="border-gray-200 my-6">
+            
+            <div class="flex items-center gap-3">
+                <button type="submit" class="btn-glass-primary px-6 py-2.5 text-sm font-semibold">
+                    <i class="fas fa-save mr-2"></i>Enregistrer
+                </button>
+                <a href="{% url 'ventes:detail_vente' vente.id %}" class="btn-glass px-6 py-2.5 text-sm">
+                    <i class="fas fa-times mr-2"></i>Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('lignes-container');
+    const totalForms = document.getElementById('id_lignes-TOTAL_FORMS');
+    const addButton = document.getElementById('ajouter-ligne');
+    
+    function calculerTotaux() {
+        let totalGeneral = 0;
+        const lignes = container.querySelectorAll('.ligne-vente');
+        
+        lignes.forEach(function(ligne, index) {
+            const quantiteInput = ligne.querySelector('input[name$="-quantite"]');
+            const prixInput = ligne.querySelector('input[name$="-prix_unitaire"]');
+            const totalP = ligne.querySelector('.total-ligne');
+            
+            if (quantiteInput && prixInput && totalP) {
+                const quantite = parseInt(quantiteInput.value) || 0;
+                const prix = parseFloat(prixInput.value) || 0;
+                const total = quantite * prix;
+                totalP.textContent = total.toLocaleString() + ' FCFA';
+                totalGeneral += total;
+            }
+        });
+        
+        const totalInput = document.querySelector('input[name="montant_total"]');
+        if (totalInput) {
+            totalInput.value = totalGeneral.toFixed(0);
+        }
+    }
+    
+    addButton.addEventListener('click', function() {
+        const forms = container.querySelectorAll('.ligne-vente');
+        const newIndex = forms.length;
+        const template = forms[0].cloneNode(true);
+        
+        const inputs = template.querySelectorAll('input, select');
+        inputs.forEach(function(input) {
+            const name = input.getAttribute('name');
+            const id = input.getAttribute('id');
+            if (name) {
+                input.setAttribute('name', name.replace(/\d+/, newIndex));
+            }
+            if (id) {
+                input.setAttribute('id', id.replace(/\d+/, newIndex));
+            }
+            if (input.type === 'text' || input.type === 'number') {
+                input.value = '';
+            }
+            if (input.type === 'checkbox') {
+                input.checked = false;
+            }
+        });
+        
+        template.querySelector('.total-ligne').textContent = '0 FCFA';
+        
+        const deleteField = template.querySelector('input[name$="-DELETE"]');
+        if (deleteField) {
+            deleteField.remove();
+        }
+        
+        container.appendChild(template);
+        totalForms.value = newIndex + 1;
+        
+        const quantiteInput = template.querySelector('input[name$="-quantite"]');
+        const prixInput = template.querySelector('input[name$="-prix_unitaire"]');
+        if (quantiteInput) quantiteInput.addEventListener('input', calculerTotaux);
+        if (prixInput) prixInput.addEventListener('input', calculerTotaux);
+    });
+    
+    container.querySelectorAll('.ligne-vente').forEach(function(ligne) {
+        const quantiteInput = ligne.querySelector('input[name$="-quantite"]');
+        const prixInput = ligne.querySelector('input[name$="-prix_unitaire"]');
+        if (quantiteInput) quantiteInput.addEventListener('input', calculerTotaux);
+        if (prixInput) prixInput.addEventListener('input', calculerTotaux);
+    });
+    
+    calculerTotaux();
+});
+</script>
+{% endblock %}

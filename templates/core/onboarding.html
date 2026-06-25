@@ -1,0 +1,303 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Onboarding - Co-Gerant{% endblock %}
+
+{% block extra_css %}
+<style>
+    .step-indicator {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+        margin-bottom: 2rem;
+    }
+    .step-indicator::before {
+        content: '';
+        position: absolute;
+        top: 16px;
+        left: 10%;
+        right: 10%;
+        height: 2px;
+        background: #E5E6E9;
+        z-index: 0;
+    }
+    .step-item {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+    }
+    .step-number {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #F4F5F6;
+        color: #71737A;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.85rem;
+        transition: all 0.3s;
+        border: 2px solid #E5E6E9;
+    }
+    .step-number.active {
+        background: #F2A91C;
+        color: white;
+        border-color: #F2A91C;
+        box-shadow: 0 4px 14px rgba(242, 169, 28, 0.3);
+    }
+    .step-number.completed {
+        background: #2E9E5B;
+        color: white;
+        border-color: #2E9E5B;
+    }
+    .step-label {
+        font-size: 0.65rem;
+        margin-top: 0.5rem;
+        color: #71737A;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+    }
+    .step-label.active {
+        color: #D6920F;
+    }
+    .checkbox-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+    }
+    .checkbox-grid .form-check {
+        background: #F4F5F6;
+        border: 1px solid #E5E6E9;
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .checkbox-grid .form-check:hover {
+        background: #FFF6E6;
+        border-color: #F2A91C;
+    }
+    .checkbox-grid .form-check-input {
+        width: 16px;
+        height: 16px;
+        accent-color: #F2A91C;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+    .checkbox-grid .form-check-label {
+        font-size: 0.85rem;
+        color: #1C1D21;
+        cursor: pointer;
+    }
+    @media (max-width: 576px) {
+        .checkbox-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="intro-shell min-h-[80vh] py-12">
+    <div class="intro-card max-w-2xl">
+        <div class="mb-6">
+            <div class="w-16 h-16 rounded-xl bg-primary-soft text-primary-dark flex items-center justify-center text-3xl mx-auto">
+                <i class="fas fa-robot"></i>
+            </div>
+            <h4 class="font-extrabold text-2xl text-gray-900 mt-4">Onboarding</h4>
+            <p class="text-gray-500 text-sm mt-1">Configurons votre entreprise</p>
+        </div>
+        
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+            <div class="step-item">
+                <div class="step-number active">1</div>
+                <span class="step-label active">Entreprise</span>
+            </div>
+            <div class="step-item">
+                <div class="step-number">2</div>
+                <span class="step-label">Objectifs</span>
+            </div>
+            <div class="step-item">
+                <div class="step-number">3</div>
+                <span class="step-label">Services</span>
+            </div>
+        </div>
+        
+        <p class="text-gray-500 text-sm mb-6 flex items-center gap-2">
+            <i class="fas fa-info-circle text-primary"></i>
+            Renseignez ces informations pour que Co-Gerant adapte ses reponses a votre secteur et objectifs.
+        </p>
+        
+        <form method="POST" id="onboardingForm" class="text-left">
+            {% csrf_token %}
+            
+            <!-- Section 1: Informations entreprise -->
+            <div class="mb-6">
+                <h6 class="font-bold text-gray-900 text-sm flex items-center gap-2 mb-3">
+                    <i class="fas fa-building text-primary"></i>Informations de l'entreprise
+                </h6>
+                <hr class="border-gray-200 mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="{{ form.nom_entreprise.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">
+                            Nom de l'entreprise *
+                        </label>
+                        {{ form.nom_entreprise }}
+                        {% if form.nom_entreprise.errors %}
+                            <p class="text-danger text-sm mt-1">{{ form.nom_entreprise.errors }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.secteur.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">
+                            Secteur d'activite *
+                        </label>
+                        {{ form.secteur }}
+                        {% if form.secteur.errors %}
+                            <p class="text-danger text-sm mt-1">{{ form.secteur.errors }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.ville.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">
+                            Ville *
+                        </label>
+                        {{ form.ville }}
+                        {% if form.ville.errors %}
+                            <p class="text-danger text-sm mt-1">{{ form.ville.errors }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.pays.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">
+                            Pays
+                        </label>
+                        {{ form.pays }}
+                        {% if form.pays.errors %}
+                            <p class="text-danger text-sm mt-1">{{ form.pays.errors }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section 2: Objectifs -->
+            <div class="mb-6">
+                <h6 class="font-bold text-gray-900 text-sm flex items-center gap-2 mb-3">
+                    <i class="fas fa-bullseye text-primary"></i>Objectifs de l'entreprise
+                </h6>
+                <hr class="border-gray-200 mb-4">
+                <div class="space-y-4">
+                    <div>
+                        <label for="{{ form.objectif_court_terme.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">
+                            Objectif court terme (3-6 mois) *
+                        </label>
+                        {{ form.objectif_court_terme }}
+                        <p class="text-gray-400 text-xs mt-1">Ex: Augmenter notre chiffre d'affaires de 20%</p>
+                        {% if form.objectif_court_terme.errors %}
+                            <p class="text-danger text-sm mt-1">{{ form.objectif_court_terme.errors }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.objectif_long_terme.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">
+                            Objectif long terme (1-3 ans) *
+                        </label>
+                        {{ form.objectif_long_terme }}
+                        <p class="text-gray-400 text-xs mt-1">Ex: Devenir leader regional dans notre secteur</p>
+                        {% if form.objectif_long_terme.errors %}
+                            <p class="text-danger text-sm mt-1">{{ form.objectif_long_terme.errors }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section 3: Services prioritaires -->
+            <div class="mb-6">
+                <h6 class="font-bold text-gray-900 text-sm flex items-center gap-2 mb-3">
+                    <i class="fas fa-star text-primary"></i>Services prioritaires
+                </h6>
+                <hr class="border-gray-200 mb-4">
+                <p class="text-gray-500 text-sm mb-3">Selectionnez les services que vous souhaitez utiliser en priorite *</p>
+                
+                <div class="checkbox-grid">
+                    {% for value, label in form.services_prioritaires.field.choices %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   name="{{ form.services_prioritaires.html_name }}" 
+                                   value="{{ value }}"
+                                   id="id_services_prioritaires_{{ forloop.counter0 }}"
+                                   {% if value in form.services_prioritaires.value %}checked{% endif %}>
+                            <label class="form-check-label" for="id_services_prioritaires_{{ forloop.counter0 }}">
+                                {{ label }}
+                            </label>
+                        </div>
+                    {% endfor %}
+                </div>
+                {% if form.services_prioritaires.errors %}
+                    <p class="text-danger text-sm mt-1">{{ form.services_prioritaires.errors }}</p>
+                {% endif %}
+                <p class="text-gray-400 text-xs mt-1">Selectionnez au moins un service</p>
+            </div>
+            
+            <!-- Informations complementaires -->
+            <div class="mb-6">
+                <h6 class="font-bold text-gray-900 text-sm flex items-center gap-2 mb-3">
+                    <i class="fas fa-plus-circle text-primary"></i>Informations complementaires
+                </h6>
+                <hr class="border-gray-200 mb-4">
+                <div class="space-y-4">
+                    <div>
+                        <label for="{{ form.description_activite.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">
+                            Description de votre activite
+                        </label>
+                        {{ form.description_activite }}
+                        {% if form.description_activite.errors %}
+                            <p class="text-danger text-sm mt-1">{{ form.description_activite.errors }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.nombre_employes.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">
+                            Nombre d'employes
+                        </label>
+                        {{ form.nombre_employes }}
+                        {% if form.nombre_employes.errors %}
+                            <p class="text-danger text-sm mt-1">{{ form.nombre_employes.errors }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="space-y-3 mt-6">
+                <button type="submit" class="btn-glass-primary w-full text-base py-3" id="submitBtn">
+                    <i class="fas fa-check-circle mr-2"></i>Terminer l'onboarding
+                </button>
+                <a href="{% url 'core:dashboard' %}" class="btn-glass w-full text-center text-base py-3 block">
+                    <i class="fas fa-times mr-2"></i>Ignorer pour le moment
+                </a>
+            </div>
+        </form>
+        
+        <p class="text-gray-400 text-xs text-center mt-4">
+            <i class="fas fa-lock mr-1"></i> Vos informations sont securisees
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('onboardingForm');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        form.addEventListener('submit', function() {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enregistrement en cours...';
+        });
+    });
+</script>
+{% endblock %}

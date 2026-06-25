@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Liste des ventes - Co-Gerant{% endblock %}
+
+{% block content %}
+<div class="max-w-[1440px] mx-auto px-6 py-8">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <h4 class="font-bold text-2xl text-gray-900 flex items-center gap-3">
+            <i class="fas fa-shopping-cart text-primary"></i>
+            Mes ventes
+            <span class="badge-status info text-sm px-3 py-1">{{ total_ventes }}</span>
+        </h4>
+        <a href="{% url 'ventes:nouvelle_vente' %}" class="btn-glass-primary text-sm py-2 px-4">
+            <i class="fas fa-plus mr-2"></i>Nouvelle vente
+        </a>
+    </div>
+
+    <!-- Filtres et recherche -->
+    <div class="glass-card p-4 mb-6">
+        <form method="GET" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+            <div class="lg:col-span-1">
+                <input type="text" name="search" class="form-glass w-full text-sm" placeholder="Rechercher par facture..." value="{{ search }}">
+            </div>
+            <div>
+                <select name="statut" class="form-glass-select w-full text-sm">
+                    <option value="">Tous les statuts</option>
+                    {% for value, label in statuts %}
+                        <option value="{{ value }}" {% if statut == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <select name="client" class="form-glass-select w-full text-sm">
+                    <option value="">Tous les clients</option>
+                    {% for client in clients %}
+                        <option value="{{ client.id }}" {% if client_id == client.id|stringformat:"s" %}selected{% endif %}>{{ client.nom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <input type="date" name="date_debut" class="form-glass w-full text-sm" placeholder="Date debut" value="{{ date_debut }}">
+            </div>
+            <div>
+                <input type="date" name="date_fin" class="form-glass w-full text-sm" placeholder="Date fin" value="{{ date_fin }}">
+            </div>
+            <div>
+                <button type="submit" class="btn-glass-primary w-full text-sm py-2.5">
+                    <i class="fas fa-search mr-2"></i>Filtrer
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Statistiques rapides -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div class="glass-card-light p-4 rounded-xl text-center hover:shadow-lg transition-all duration-300">
+            <div class="text-2xl font-extrabold text-gray-900">{{ total_ventes }}</div>
+            <div class="text-sm text-gray-500 font-medium">Total ventes</div>
+        </div>
+        <div class="glass-card-light p-4 rounded-xl text-center hover:shadow-lg transition-all duration-300">
+            <div class="text-2xl font-extrabold text-gray-900">{{ total_ca|floatformat:0 }}</div>
+            <div class="text-sm text-gray-500 font-medium">Chiffre d'affaires total (FCFA)</div>
+        </div>
+    </div>
+
+    <!-- Liste des ventes -->
+    <div class="glass-card overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50/50">
+                    <tr>
+                        <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Facture</th>
+                        <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Client</th>
+                        <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                        <th class="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Montant</th>
+                        <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Statut</th>
+                        <th class="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for vente in ventes %}
+                    <tr class="hover:bg-gray-50/50 transition-colors">
+                        <td class="px-6 py-3">
+                            <a href="{% url 'ventes:detail_vente' vente.id %}" class="text-primary font-semibold hover:underline">
+                                {{ vente.numero_facture }}
+                            </a>
+                        </td>
+                        <td class="px-6 py-3 text-gray-600">{{ vente.client.nom|default:"-" }}</td>
+                        <td class="px-6 py-3 text-gray-600">{{ vente.date_vente|date:"d/m/Y" }}</td>
+                        <td class="px-6 py-3 text-right font-semibold text-gray-900">{{ vente.montant_total|floatformat:0 }} FCFA</td>
+                        <td class="px-6 py-3">
+                            <span class="badge-status 
+                                {% if vente.statut == 'VALIDE' %}success
+                                {% elif vente.statut == 'LIVREE' %}info
+                                {% elif vente.statut == 'EN_COURS' %}warning
+                                {% else %}danger{% endif %}">
+                                {{ vente.get_statut_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-3 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="{% url 'ventes:detail_vente' vente.id %}" class="text-gray-400 hover:text-primary transition-colors">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'ventes:modifier_vente' vente.id %}" class="text-gray-400 hover:text-primary transition-colors">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-8 text-center text-gray-400">
+                            Aucune vente trouvee
+                            {% if search %}
+                                pour la recherche "{{ search }}"
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if paginator.num_pages > 1 %}
+    <div class="flex items-center justify-between mt-6">
+        <p class="text-sm text-gray-500">
+            Page <span class="font-semibold text-gray-900">{{ ventes.number }}</span>
+            sur <span class="font-semibold text-gray-900">{{ paginator.num_pages }}</span>
+        </p>
+        <div class="flex items-center gap-2">
+            {% if ventes.has_previous %}
+                <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                   class="btn-glass text-sm py-1.5 px-3">
+                    <i class="fas fa-chevron-double-left"></i>
+                </a>
+                <a href="?page={{ ventes.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                   class="btn-glass text-sm py-1.5 px-3">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            {% endif %}
+
+            <span class="btn-glass-primary text-sm py-1.5 px-4 cursor-default">
+                {{ ventes.number }}
+            </span>
+
+            {% if ventes.has_next %}
+                <a href="?page={{ ventes.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                   class="btn-glass text-sm py-1.5 px-3">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+                <a href="?page={{ paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                   class="btn-glass text-sm py-1.5 px-3">
+                    <i class="fas fa-chevron-double-right"></i>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

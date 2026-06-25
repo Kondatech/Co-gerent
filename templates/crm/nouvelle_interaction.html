@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Nouvelle interaction - {{ client.nom }} - Co-Gerant{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-6 py-8">
+    <div class="glass-card p-8 hover:shadow-lg transition-all duration-300">
+        <!-- Header -->
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 rounded-xl bg-primary-soft text-primary-dark flex items-center justify-center text-3xl mx-auto">
+                <i class="fas fa-comment-plus"></i>
+            </div>
+            <h5 class="font-bold text-2xl text-gray-900 mt-4">Nouvelle interaction</h5>
+            <p class="text-gray-500 text-sm mt-1">Avec <span class="font-semibold text-gray-700">{{ client.nom }}</span></p>
+        </div>
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            <!-- Type -->
+            <div class="mb-4">
+                <label for="{{ form.type.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">Type d'interaction *</label>
+                {{ form.type }}
+                {% if form.type.errors %}
+                    <p class="text-danger text-xs mt-1">{{ form.type.errors }}</p>
+                {% endif %}
+            </div>
+            
+            <!-- Description -->
+            <div class="mb-4">
+                <label for="{{ form.description.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">Description *</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                    <p class="text-danger text-xs mt-1">{{ form.description.errors }}</p>
+                {% endif %}
+            </div>
+            
+            <!-- Suivi -->
+            <div class="mb-4">
+                <div class="flex items-center gap-2">
+                    {{ form.suivi }}
+                    <label class="text-gray-600 text-sm" for="{{ form.suivi.id_for_label }}">
+                        Suivi necessaire
+                    </label>
+                </div>
+                {% if form.suivi.errors %}
+                    <p class="text-danger text-xs mt-1">{{ form.suivi.errors }}</p>
+                {% endif %}
+            </div>
+            
+            <!-- Date de suivi -->
+            <div class="mb-4" id="date_suivi_container" style="display: none;">
+                <label for="{{ form.date_suivi.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">Date de suivi</label>
+                {{ form.date_suivi }}
+                {% if form.date_suivi.errors %}
+                    <p class="text-danger text-xs mt-1">{{ form.date_suivi.errors }}</p>
+                {% endif %}
+            </div>
+            
+            <hr class="border-gray-200 my-6">
+            
+            <!-- Actions -->
+            <div class="flex items-center gap-3">
+                <button type="submit" class="btn-glass-primary px-6 py-2.5 text-sm font-semibold">
+                    <i class="fas fa-save mr-2"></i>Enregistrer
+                </button>
+                <a href="{% url 'crm:detail_client' client.id %}" class="btn-glass px-6 py-2.5 text-sm">
+                    <i class="fas fa-times mr-2"></i>Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const suiviCheckbox = document.querySelector('input[name="suivi"]');
+    const dateSuiviContainer = document.getElementById('date_suivi_container');
+    
+    function toggleDateSuivi() {
+        if (suiviCheckbox.checked) {
+            dateSuiviContainer.style.display = 'block';
+        } else {
+            dateSuiviContainer.style.display = 'none';
+        }
+    }
+    
+    suiviCheckbox.addEventListener('change', toggleDateSuivi);
+    toggleDateSuivi();
+});
+</script>
+{% endblock %}

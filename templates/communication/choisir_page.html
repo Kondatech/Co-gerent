@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Choisir une page - Co-Gerant{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-6 py-12">
+    <div class="glass-card p-8">
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 rounded-xl bg-[#1877F2]/10 text-[#1877F2] flex items-center justify-center text-3xl mx-auto">
+                <i class="fab fa-facebook"></i>
+            </div>
+            <h4 class="font-extrabold text-2xl text-gray-900 mt-4">Selectionnez votre page</h4>
+            <p class="text-gray-500 text-sm mt-1">Choisissez la page Facebook a connecter</p>
+        </div>
+        
+        <form method="POST" action="{% url 'communication:confirmer_page_facebook' %}">
+            {% csrf_token %}
+            <div class="space-y-3">
+                {% for page in pages %}
+                <label class="flex items-center gap-4 p-4 rounded-xl border border-gray-200 hover:border-primary hover:bg-primary-soft/20 transition-all duration-200 cursor-pointer">
+                    <input type="radio" name="page_id" value="{{ page.id }}" class="w-4 h-4 text-primary accent-primary" required>
+                    <div class="flex-1">
+                        <p class="font-semibold text-gray-900">{{ page.name }}</p>
+                        <p class="text-xs text-gray-400">ID: {{ page.id }}</p>
+                    </div>
+                    <span class="badge-status info text-xs">Page</span>
+                </label>
+                {% endfor %}
+            </div>
+            
+            <div class="flex items-center gap-3 mt-6">
+                <button type="submit" class="btn-glass-primary px-6 py-2.5 text-sm font-semibold">
+                    <i class="fas fa-check mr-2"></i>Confirmer
+                </button>
+                <a href="{% url 'communication:integrations' %}" class="btn-glass px-6 py-2.5 text-sm">
+                    <i class="fas fa-times mr-2"></i>Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

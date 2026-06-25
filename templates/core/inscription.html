@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Inscription - Co-Gerant{% endblock %}
+
+{% block content %}
+<div class="intro-shell min-h-[80vh] py-12">
+    <div class="intro-card max-w-lg">
+        <div class="mb-6">
+            <div class="w-16 h-16 rounded-xl bg-primary-soft text-primary-dark flex items-center justify-center text-3xl mx-auto">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <h4 class="font-extrabold text-2xl text-gray-900 mt-4">Creer un compte</h4>
+            <p class="text-gray-500 text-sm mt-1">Rejoignez Co-Gerant et gerez votre entreprise avec l'IA</p>
+        </div>
+        
+        <form method="POST" class="text-left">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="{{ form.prenom.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">
+                        {{ form.prenom.label }}
+                    </label>
+                    {{ form.prenom }}
+                    {% if form.prenom.errors %}
+                        <p class="text-danger text-sm mt-1">{{ form.prenom.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label for="{{ form.nom.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">
+                        {{ form.nom.label }}
+                    </label>
+                    {{ form.nom }}
+                    {% if form.nom.errors %}
+                        <p class="text-danger text-sm mt-1">{{ form.nom.errors }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <label for="{{ form.email.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">
+                    {{ form.email.label }}
+                </label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <p class="text-danger text-sm mt-1">{{ form.email.errors }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="mt-4">
+                <label for="{{ form.telephone.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">
+                    {{ form.telephone.label }}
+                </label>
+                {{ form.telephone }}
+                {% if form.telephone.errors %}
+                    <p class="text-danger text-sm mt-1">{{ form.telephone.errors }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="mt-4">
+                <label for="{{ form.role.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">
+                    {{ form.role.label }}
+                </label>
+                {{ form.role }}
+                {% if form.role.errors %}
+                    <p class="text-danger text-sm mt-1">{{ form.role.errors }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                <div>
+                    <label for="{{ form.password1.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">
+                        {{ form.password1.label }}
+                    </label>
+                    {{ form.password1 }}
+                    <p class="text-gray-400 text-xs mt-1">Au moins 8 caracteres, avec chiffres et lettres</p>
+                    {% if form.password1.errors %}
+                        <p class="text-danger text-sm mt-1">{{ form.password1.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label for="{{ form.password2.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">
+                        {{ form.password2.label }}
+                    </label>
+                    {{ form.password2 }}
+                    {% if form.password2.errors %}
+                        <p class="text-danger text-sm mt-1">{{ form.password2.errors }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-glass-primary w-full text-base py-3 mt-6">
+                <i class="fas fa-user-plus mr-2"></i>S'inscrire
+            </button>
+        </form>
+        
+        <hr class="border-gray-200 my-6">
+        
+        <p class="text-center text-gray-500 text-sm">
+            Deja un compte ?
+            <a href="{% url 'core:connexion' %}" class="text-primary-dark font-semibold hover:underline">
+                Se connecter
+            </a>
+        </p>
+    </div>
+</div>
+{% endblock %}

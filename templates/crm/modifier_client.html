@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Modifier {{ client.nom }} - Co-Gerant{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-6 py-8">
+    <div class="glass-card p-8 hover:shadow-lg transition-all duration-300">
+        <!-- Header -->
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 rounded-xl bg-primary-soft text-primary-dark flex items-center justify-center text-3xl mx-auto">
+                <i class="fas fa-edit"></i>
+            </div>
+            <h5 class="font-bold text-2xl text-gray-900 mt-4">Modifier {{ client.nom }}</h5>
+            <p class="text-gray-500 text-sm mt-1">Mettez a jour les informations du client</p>
+        </div>
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 gap-4">
+                <!-- Nom -->
+                <div>
+                    <label for="{{ form.nom.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">Nom du client *</label>
+                    {{ form.nom }}
+                    {% if form.nom.errors %}
+                        <p class="text-danger text-xs mt-1">{{ form.nom.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Email et Telephone -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="{{ form.email.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">Email</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <p class="text-danger text-xs mt-1">{{ form.email.errors }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.telephone.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">Telephone</label>
+                        {{ form.telephone }}
+                        {% if form.telephone.errors %}
+                            <p class="text-danger text-xs mt-1">{{ form.telephone.errors }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Adresse -->
+                <div>
+                    <label for="{{ form.adresse.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">Adresse</label>
+                    {{ form.adresse }}
+                    {% if form.adresse.errors %}
+                        <p class="text-danger text-xs mt-1">{{ form.adresse.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Segment et RFM -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="{{ form.segment.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">Segment</label>
+                        {{ form.segment }}
+                        {% if form.segment.errors %}
+                            <p class="text-danger text-xs mt-1">{{ form.segment.errors }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.score_rfm.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">Score RFM (0-1000)</label>
+                        {{ form.score_rfm }}
+                        <p class="text-gray-400 text-xs mt-1">Score de recence, frequence et montant</p>
+                        {% if form.score_rfm.errors %}
+                            <p class="text-danger text-xs mt-1">{{ form.score_rfm.errors }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Actif -->
+                <div>
+                    <div class="flex items-center gap-2">
+                        {{ form.est_actif }}
+                        <label class="text-gray-600 text-sm" for="{{ form.est_actif.id_for_label }}">
+                            Client actif
+                        </label>
+                    </div>
+                    {% if form.est_actif.errors %}
+                        <p class="text-danger text-xs mt-1">{{ form.est_actif.errors }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <hr class="border-gray-200 my-6">
+            
+            <!-- Actions -->
+            <div class="flex items-center gap-3">
+                <button type="submit" class="btn-glass-primary px-6 py-2.5 text-sm font-semibold">
+                    <i class="fas fa-save mr-2"></i>Enregistrer
+                </button>
+                <a href="{% url 'crm:detail_client' client.id %}" class="btn-glass px-6 py-2.5 text-sm">
+                    <i class="fas fa-times mr-2"></i>Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

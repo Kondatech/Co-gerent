@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mes notifications - Co-Gerant{% endblock %}
+
+{% block extra_css %}
+<style>
+    .notif-item {
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: var(--radius-sm);
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        transition: var(--transition);
+    }
+    
+    .notif-item:hover {
+        background: rgba(255, 255, 255, 0.04);
+    }
+    
+    .notif-item.unread {
+        border-left: 3px solid var(--primary);
+        background: rgba(79, 140, 255, 0.05);
+    }
+    
+    .notif-item .notif-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 0.9rem;
+    }
+    
+    .notif-item .notif-icon.urgent {
+        background: rgba(255, 107, 107, 0.15);
+        color: var(--status-danger);
+    }
+    .notif-item .notif-icon.recommandation {
+        background: rgba(108, 92, 231, 0.15);
+        color: #A29BFE;
+    }
+    .notif-item .notif-icon.succes {
+        background: rgba(46, 213, 115, 0.15);
+        color: var(--status-success);
+    }
+    .notif-item .notif-icon.info {
+        background: rgba(79, 140, 255, 0.15);
+        color: var(--status-info);
+    }
+    .notif-item .notif-icon.alerte {
+        background: rgba(255, 169, 77, 0.15);
+        color: var(--status-warning);
+    }
+    .notif-item .notif-icon.email {
+        background: rgba(79, 140, 255, 0.1);
+        color: var(--status-info);
+    }
+    
+    .notif-item .notif-time {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+    }
+    
+    .filtres .btn-glass {
+        border-radius: 50px;
+        padding: 0.3rem 1rem;
+        font-size: 0.85rem;
+    }
+    
+    .filtres .btn-glass.active {
+        background: var(--primary-gradient);
+        color: #fff;
+        border-color: transparent;
+    }
+    
+    .notification-empty {
+        text-align: center;
+        padding: 3rem 1rem;
+    }
+    .notification-empty i {
+        font-size: 3rem;
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h4 class="fw-bold mb-0">
+                        <i class="fas fa-bell me-2" style="color: var(--primary);"></i>
+                        Mes notifications
+                        {% if non_lues > 0 %}
+                            <span class="badge-status danger ms-2">{{ non_lues }}</span>
+                        {% endif %}
+                    </h4>
+                    <p class="text-secondary small mt-1">Restez informe des activites importantes</p>
+                </div>
+                <div>
+                    {% if non_lues > 0 %}
+                        <button class="btn-glass btn-glass-primary" onclick="marquerToutesLues()">
+                            <i class="fas fa-check-double me-1"></i>Tout marquer comme lu
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Filters -->
+            <div class="filtres mb-4">
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="?statut=toutes" class="btn-glass {% if statut == 'toutes' %}active{% endif %}">
+                        Toutes
+                    </a>
+                    <a href="?statut=non_lues" class="btn-glass {% if statut == 'non_lues' %}active{% endif %}">
+                        Non lues
+                        {% if non_lues > 0 %}
+                            <span class="badge-status danger ms-1" style="font-size: 0.6rem;">{{ non_lues }}</span>
+                        {% endif %}
+                    </a>
+                    <a href="?statut=lues" class="btn-glass {% if statut == 'lues' %}active{% endif %}">
+                        Lues
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Notifications List -->
+            <div id="notificationsList">
+                {% if notifications %}
+                    {% for notification in notifications %}
+                        <div class="notif-item {% if not notification.est_lue %}unread{% endif %}" 
+                             data-id="{{ notification.id }}">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="notif-icon {{ notification.type|lower }}">
+                                    <i class="fas {{ notification.get_icone }}"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <span class="badge-status info me-2" style="font-size: 0.6rem;">
+                                                {{ notification.get_type_display }}
+                                            </span>
+                                            <span class="badge-status 
+                                                {% if notification.priorite == 'CRITIQUE' %}danger
+                                                {% elif notification.priorite == 'HAUTE' %}warning
+                                                {% elif notification.priorite == 'MOYENNE' %}info
+                                                {% else %}neutral{% endif %}"
+                                                style="font-size: 0.6rem;">
+                                                {{ notification.get_priorite_display }}
+                                            </span>
+                                            {% if not notification.est_lue %}
+                                                <span class="badge-status info ms-1" style="font-size: 0.5rem;">Nouveau</span>
+                                            {% endif %}
+                                        </div>
+                                        <span class="notif-time">{{ notification.date_creation|date:"d/m/Y H:i" }}</span>
+                                    </div>
+                                    <p class="mb-1 mt-1">{{ notification.message }}</p>
+                                    <div class="d-flex gap-2 mt-1">
+                                        {% if not notification.est_lue %}
+                                            <button class="btn-glass" style="font-size: 0.7rem; padding: 0.2rem 0.8rem;" 
+                                                    onclick="marquerLue({{ notification.id }})">
+                                                <i class="fas fa-check me-1"></i>Marquer comme lu
+                                            </button>
+                                        {% endif %}
+                                        {% if notification.lien %}
+                                            <a href="{{ notification.lien }}" class="btn-glass" style="font-size: 0.7rem; padding: 0.2rem 0.8rem;">
+                                                <i class="fas fa-arrow-right me-1"></i>Voir
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    
+                    <!-- Pagination -->
+                    {% if total_pages > 1 %}
+                        <nav class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                {% if has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link btn-glass" href="?page={{ previous_page }}&statut={{ statut }}">
+                                            <i class="fas fa-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                
+                                {% for i in total_pages|make_list %}
+                                    <li class="page-item {% if i == page %}active{% endif %}">
+                                        <a class="page-link btn-glass" href="?page={{ i }}&statut={{ statut }}">{{ i }}</a>
+                                    </li>
+                                {% endfor %}
+                                
+                                {% if has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link btn-glass" href="?page={{ next_page }}&statut={{ statut }}">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+                    
+                {% else %}
+                    <div class="notification-empty glass-card p-4">
+                        <i class="fas fa-bell-slash"></i>
+                        <h5>Aucune notification</h5>
+                        <p class="text-secondary">
+                            {% if statut == 'non_lues' %}
+                                Vous n'avez pas de notifications non lues.
+                            {% else %}
+                                Vous n'avez aucune notification pour le moment.
+                                Les notifications importantes apparaîtront ici.
+                            {% endif %}
+                        </p>
+                        <a href="{% url 'core:dashboard' %}" class="btn-glass btn-glass-primary">
+                            <i class="fas fa-th-large me-2"></i>Retour au dashboard
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function marquerLue(notificationId) {
+        fetch("{% url 'notifications:marquer_lue' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                notification_id: notificationId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const item = document.querySelector(`.notif-item[data-id="${notificationId}"]`);
+                if (item) {
+                    item.classList.remove('unread');
+                    const badge = item.querySelector('.badge-status.info');
+                    if (badge && badge.textContent.trim() === 'Nouveau') badge.remove();
+                    const btn = item.querySelector('.btn-glass');
+                    if (btn && btn.textContent.includes('Marquer')) btn.remove();
+                }
+                updateNotificationCount();
+            }
+        })
+        .catch(error => console.error('Erreur:', error));
+    }
+    
+    function marquerToutesLues() {
+        if (!confirm('Voulez-vous marquer toutes les notifications comme lues ?')) return;
+        
+        fetch("{% url 'notifications:marquer_toutes_lues' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) location.reload();
+        })
+        .catch(error => console.error('Erreur:', error));
+    }
+    
+    function updateNotificationCount() {
+        fetch("{% url 'notifications:count' %}")
+            .then(response => response.json())
+            .then(data => {
+                const badge = document.querySelector('.badge-status.danger');
+                if (badge) {
+                    if (data.non_lues > 0) {
+                        badge.textContent = data.non_lues;
+                        badge.style.display = 'inline';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+                
+                const filterBadge = document.querySelector('.filtres .badge-status.danger');
+                if (filterBadge) {
+                    if (data.non_lues > 0) {
+                        filterBadge.textContent = data.non_lues;
+                        filterBadge.style.display = 'inline';
+                    } else {
+                        filterBadge.style.display = 'none';
+                    }
+                }
+            })
+            .catch(error => console.error('Erreur:', error));
+    }
+    
+    setInterval(updateNotificationCount, 60000);
+</script>
+{% endblock %}

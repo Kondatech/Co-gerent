@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Integrations - Co-Gerant{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-6 py-8">
+    <div class="flex items-center gap-3 mb-6">
+        <i class="fas fa-plug text-2xl text-primary"></i>
+        <h1 class="text-2xl font-extrabold text-gray-900">Integrations</h1>
+    </div>
+    <p class="text-gray-500 text-sm mb-8">Connectez vos outils et services pour automatiser vos actions.</p>
+
+    <!-- Facebook Integration -->
+    <div class="glass-card p-6 hover:shadow-lg transition-all duration-300">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-[#1877F2]/10 text-[#1877F2] flex items-center justify-center text-2xl">
+                    <i class="fab fa-facebook"></i>
+                </div>
+                <div>
+                    <h5 class="font-bold text-gray-900 text-base">Facebook</h5>
+                    <p class="text-gray-500 text-sm">Publiez automatiquement sur votre page Facebook</p>
+                </div>
+            </div>
+            <div>
+                {% if facebook_connecte %}
+                    <span class="badge-status success px-3 py-1.5 text-sm">
+                        <i class="fas fa-check-circle mr-1"></i>Connecte
+                    </span>
+                {% else %}
+                    <span class="badge-status neutral px-3 py-1.5 text-sm">
+                        <i class="fas fa-times-circle mr-1"></i>Non connecte
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <hr class="border-gray-200 my-4">
+        
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                {% if connexion %}
+                    <p class="text-sm text-gray-600">
+                        <i class="fas fa-building mr-2 text-primary"></i>
+                        <strong>Page :</strong> {{ connexion.page_nom|default:connexion.page_id }}
+                    </p>
+                    <p class="text-xs text-gray-400 mt-1">
+                        <i class="fas fa-clock mr-1"></i>
+                        Connecte depuis le {{ connexion.date_connexion|date:"d/m/Y H:i" }}
+                    </p>
+                {% else %}
+                    <p class="text-sm text-gray-400">Aucune page Facebook connectee.</p>
+                {% endif %}
+            </div>
+            
+            <div class="flex items-center gap-3">
+                {% if facebook_connecte %}
+                    <form method="POST" action="{% url 'communication:deconnecter_facebook' %}" onsubmit="return confirm('Voulez-vous vraiment deconnecter votre page Facebook ?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-glass-danger text-sm px-4 py-2">
+                            <i class="fas fa-unlink mr-2"></i>Deconnecter
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Formulaire de connexion -->
+        <div class="glass-card-light p-4 rounded-lg">
+            <h6 class="font-bold text-gray-900 text-sm mb-3">
+                {% if facebook_connecte %}
+                    Modifier la connexion
+                {% else %}
+                    Connecter une page Facebook
+                {% endif %}
+            </h6>
+            
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="{{ form.page_id.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">
+                            {{ form.page_id.label }}
+                        </label>
+                        {{ form.page_id }}
+                        <p class="text-xs text-gray-400 mt-1">Trouvez l'ID dans l'URL de votre page</p>
+                        {% if form.page_id.errors %}
+                            <p class="text-danger text-xs mt-1">{{ form.page_id.errors }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.page_nom.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">
+                            {{ form.page_nom.label }}
+                        </label>
+                        {{ form.page_nom }}
+                        <p class="text-xs text-gray-400 mt-1">Optionnel, sera recupere automatiquement</p>
+                        {% if form.page_nom.errors %}
+                            <p class="text-danger text-xs mt-1">{{ form.page_nom.errors }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <label for="{{ form.access_token.id_for_label }}" class="block text-gray-700 font-semibold text-sm mb-1.5">
+                        {{ form.access_token.label }}
+                    </label>
+                    {{ form.access_token }}
+                    <p class="text-xs text-gray-400 mt-1">
+                        Generez un token depuis 
+                        <a href="https://developers.facebook.com/tools/explorer/" target="_blank" class="text-primary hover:underline">
+                            l'outil Graph API Explorer
+                        </a>
+                        (scope: pages_manage_posts, pages_read_engagement)
+                    </p>
+                    {% if form.access_token.errors %}
+                        <p class="text-danger text-xs mt-1">{{ form.access_token.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="mt-4 flex items-center gap-3">
+                    <button type="submit" class="btn-glass-primary text-sm px-6 py-2.5">
+                        <i class="fas {% if facebook_connecte %}fa-edit{% else %}fa-link{% endif %} mr-2"></i>
+                        {% if facebook_connecte %}Mettre a jour{% else %}Connecter{% endif %}
+                    </button>
+                    {% if facebook_connecte %}
+                        <span class="text-xs text-gray-400">Le token sera teste avant d'etre enregistre</span>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+        
+        <!-- Comment obtenir un token -->
+        <div class="mt-4 p-3 bg-info/5 rounded-lg border border-info/20">
+            <p class="text-xs text-gray-600 flex items-start gap-2">
+                <i class="fas fa-info-circle text-info mt-0.5"></i>
+                <span>
+                    <strong>Comment obtenir votre token ?</strong><br>
+                    1. Allez sur 
+                    <a href="https://developers.facebook.com/tools/explorer/" target="_blank" class="text-primary hover:underline">
+                        Graph API Explorer
+                    </a>
+                    <br>
+                    2. Selectionnez votre application et votre page<br>
+                    3. Ajoutez les permissions: <code>pages_manage_posts, pages_read_engagement</code><br>
+                    4. Cliquez sur "Generer le token d'acces"<br>
+                    5. Copiez le token (EAA...) et collez-le ci-dessus
+                </span>
+            </p>
+        </div>
+        
+        {% if facebook_connecte %}
+        <div class="mt-4 p-3 bg-success/5 rounded-lg border border-success/20">
+            <p class="text-xs text-gray-600 flex items-center gap-2">
+                <i class="fas fa-check-circle text-success"></i>
+                Vous pouvez maintenant demander a l'Agent Communication de publier sur votre page Facebook.
+                <span class="text-primary font-semibold">Ex: "Publie une offre pour un ordinateur a 700 000 FCFA"</span>
+            </p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Autres integrations -->
+    <div class="glass-card p-6 hover:shadow-lg transition-all duration-300 mt-6 opacity-50">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-gray-100 text-gray-400 flex items-center justify-center text-2xl">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div>
+                <h5 class="font-bold text-gray-400 text-base">WhatsApp Business</h5>
+                <p class="text-gray-400 text-sm">Prochainement disponible</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

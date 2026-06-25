@@ -1,0 +1,695 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Co-Gerant - Accueil{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Supprimer toutes les marges et paddings qui créent l'espace */
+    body {
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+    }
+    
+    /* Supprimer l'espace entre la navbar et le hero */
+    .page-wrap {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        margin-top: 0 !important;
+        max-width: 100% !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    
+    /* Supprimer l'espace du container de messages */
+    .container.mt-3 {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        display: none;
+    }
+    
+    /* Full screen hero - prend toute la largeur et toute la hauteur */
+    .hero-fullscreen {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        min-height: 600px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: calc(50% - 50vw);
+        margin-right: calc(50% - 50vw);
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        left: 0;
+        right: 0;
+        top: 0;
+    }
+    
+    /* Carrousel en arrière-plan - prend tout l'espace */
+    .hero-carousel-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 0;
+        width: 100%;
+        height: 100%;
+    }
+    
+    .hero-carousel-bg-slides {
+        display: flex;
+        width: 300%;
+        height: 100%;
+        transition: transform 1.5s ease-in-out;
+        animation: carousel-bg-slide 15s ease-in-out infinite;
+        will-change: transform;
+    }
+    
+    .hero-carousel-bg-slide {
+        width: 33.333%;
+        height: 100%;
+        flex-shrink: 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    /* ============================================
+       FOND FLOU SUR LE SLIDE (::before)
+       ============================================ */
+    .hero-carousel-bg-slide::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: var(--slide-image);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        filter: blur(20px) brightness(0.4);
+        transform: scale(1.2);
+        z-index: 0;
+    }
+    
+    /* ============================================
+       IMAGE NETTE AVEC EFFET KEN BURNS
+       ============================================ */
+    .slide-main {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        background-image: var(--slide-image);
+        background-size: cover;
+        background-position: center center;
+        background-repeat: no-repeat;
+        z-index: 1;
+        animation: kenburns 15s ease-in-out infinite;
+    }
+    
+    /* Effet Ken Burns - Zoom lent */
+    @keyframes kenburns {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.08);
+        }
+        100% {
+            transform: scale(1.15);
+        }
+    }
+    
+    /* Fallback si l'image ne charge pas */
+    .slide-fallback {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, #1C1D21, #2E2F33);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+        padding: 2rem;
+        text-align: center;
+        z-index: 2;
+    }
+    
+    .slide-fallback.visible {
+        display: flex;
+    }
+    
+    /* ============================================
+       OVERLAY AMÉLIORÉ
+       ============================================ */
+    .hero-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        background:
+            linear-gradient(
+                to right,
+                rgba(0, 0, 0, 0.75),
+                rgba(0, 0, 0, 0.45)
+            );
+    }
+    
+    /* Motif africain subtil */
+    .hero-overlay::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: 
+            repeating-linear-gradient(45deg, 
+                transparent,
+                transparent 60px,
+                rgba(242, 169, 28, 0.04) 60px,
+                rgba(242, 169, 28, 0.04) 61px
+            ),
+            repeating-linear-gradient(-45deg, 
+                transparent,
+                transparent 60px,
+                rgba(242, 169, 28, 0.04) 60px,
+                rgba(242, 169, 28, 0.04) 61px
+            ),
+            radial-gradient(circle at 20% 80%, rgba(242, 169, 28, 0.06) 0%, transparent 40%),
+            radial-gradient(circle at 80% 20%, rgba(242, 169, 28, 0.06) 0%, transparent 40%);
+        pointer-events: none;
+        z-index: 0;
+    }
+    
+    /* ============================================
+       CONTENU AVEC ANIMATION - CENTRÉ VERTICALEMENT
+       ============================================ */
+    .hero-content {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        max-width: 1140px;
+        padding: 2rem 1.5rem;
+        animation: fadeHero 1.2s ease forwards;
+        display: flex;
+        align-items: center;
+        min-height: 100%;
+    }
+    
+    @keyframes fadeHero {
+        from {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Texte en blanc sur fond sombre */
+    .hero-content h1 {
+        color: #FFFFFF;
+    }
+    
+    .hero-content h2 {
+        color: rgba(255, 255, 255, 0.85);
+    }
+    
+    .hero-content p {
+        color: rgba(255, 255, 255, 0.75);
+    }
+    
+    .hero-content .text-primary {
+        color: #F2A91C !important;
+    }
+    
+    .hero-content .btn-glass {
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #FFFFFF;
+    }
+    
+    .hero-content .btn-glass:hover {
+        background: rgba(255, 255, 255, 0.20);
+        border-color: #F2A91C;
+        color: #FFFFFF;
+    }
+    
+    .hero-content .btn-glass-primary {
+        background: linear-gradient(135deg, #F2A91C, #F7BE4D);
+        color: #1C1D21;
+    }
+    
+    .hero-content .btn-glass-primary:hover {
+        box-shadow: 0 8px 30px rgba(242, 169, 28, 0.4);
+        transform: translateY(-2px);
+    }
+    
+    /* Puce premium */
+    .premium-badge {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        padding: 0.35rem 1rem;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        color: rgba(255, 255, 255, 0.7);
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    
+    .premium-badge i {
+        color: #F2A91C;
+        font-size: 0.7rem;
+    }
+    
+    /* Cards des agents en verre sur fond sombre */
+    .hero-content .glass-card {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    }
+    
+    .hero-content .glass-card-light {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    
+    .hero-content .glass-card-light span {
+        color: rgba(255, 255, 255, 0.9) !important;
+    }
+    
+    .hero-content .glass-card-light i {
+        color: #F2A91C;
+    }
+    
+    .hero-content .glass-card-light .text-success { color: #4ADE80 !important; }
+    .hero-content .glass-card-light .text-info { color: #60A5FA !important; }
+    .hero-content .glass-card-light .text-warning { color: #FBBF24 !important; }
+    
+    /* Dots du carrousel */
+    .carousel-dots {
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 12px;
+        z-index: 4;
+    }
+    
+    .carousel-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.35);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        padding: 0;
+        position: relative;
+    }
+    
+    .carousel-dot.active {
+        background: #F2A91C;
+        border-color: #FFFFFF;
+        width: 32px;
+        border-radius: 6px;
+    }
+    
+    .carousel-dot:hover {
+        background: rgba(255, 255, 255, 0.6);
+    }
+    
+    @keyframes carousel-bg-slide {
+        0%, 28% { transform: translateX(0); }
+        33%, 61% { transform: translateX(-33.333%); }
+        66%, 94% { transform: translateX(-66.666%); }
+        100% { transform: translateX(0); }
+    }
+    
+    /* Pause au survol */
+    .hero-fullscreen:hover .hero-carousel-bg-slides {
+        animation-play-state: paused;
+    }
+    
+    /* ============================================
+       RESPONSIVE MOBILE AMÉLIORÉ
+       ============================================ */
+    @media (max-width: 768px) {
+        .hero-fullscreen {
+            height: 100vh;
+            min-height: 100vh;
+            width: 100vw;
+            margin-left: calc(50% - 50vw);
+            margin-right: calc(50% - 50vw);
+        }
+        
+        .hero-content h1 {
+            font-size: 2.5rem;
+            line-height: 1.1;
+        }
+        
+        .hero-content h2 {
+            font-size: 1.1rem;
+        }
+        
+        .hero-content p {
+            font-size: 0.9rem;
+        }
+        
+        .slide-main {
+            background-position: center center;
+        }
+        
+        .carousel-dots {
+            bottom: 20px;
+            gap: 8px;
+        }
+        
+        .carousel-dot {
+            width: 10px;
+            height: 10px;
+        }
+        
+        .carousel-dot.active {
+            width: 24px;
+        }
+        
+        .hero-content .glass-card {
+            padding: 0.75rem !important;
+        }
+        
+        .premium-badge {
+            font-size: 0.55rem;
+            padding: 0.2rem 0.7rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .hero-fullscreen {
+            min-height: 100vh;
+            height: 100vh;
+        }
+        
+        .hero-content h1 {
+            font-size: 1.8rem;
+        }
+        
+        .hero-content h2 {
+            font-size: 0.95rem;
+        }
+        
+        .hero-content p {
+            font-size: 0.8rem;
+        }
+        
+        .carousel-dots {
+            bottom: 12px;
+            gap: 6px;
+        }
+        
+        .carousel-dot {
+            width: 8px;
+            height: 8px;
+        }
+        
+        .carousel-dot.active {
+            width: 20px;
+        }
+        
+        .hero-content .glass-card {
+            padding: 0.5rem !important;
+        }
+        
+        .hero-content .glass-card-light {
+            padding: 0.3rem 0.4rem !important;
+        }
+        
+        .hero-content .glass-card-light i {
+            font-size: 0.8rem !important;
+        }
+        
+        .hero-content .glass-card-light span {
+            font-size: 0.55rem !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Supprimer le conteneur de messages qui crée l'espace -->
+<!-- Hero Section Full Screen -->
+<section class="hero-fullscreen">
+    <!-- Carrousel en arrière-plan -->
+    <div class="hero-carousel-bg">
+        <div class="hero-carousel-bg-slides">
+            <!-- Slide 1 -->
+            <div class="hero-carousel-bg-slide" style="--slide-image: url('{% static 'images/hero/slide1-entrepreneur.jpg' %}');">
+                <div class="slide-main" style="--slide-image: url('{% static 'images/hero/slide1-entrepreneur.jpg' %}');"></div>
+                <div class="slide-fallback">
+                    <div>
+                        <i class="fas fa-user-tie text-4xl text-primary mb-3 block"></i>
+                        <span>Entrepreneur africain</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Slide 2 -->
+            <div class="hero-carousel-bg-slide" style="--slide-image: url('{% static 'images/hero/slide2-equipe.jpg' %}');">
+                <div class="slide-main" style="--slide-image: url('{% static 'images/hero/slide2-equipe.jpg' %}');"></div>
+                <div class="slide-fallback">
+                    <div>
+                        <i class="fas fa-users text-4xl text-primary mb-3 block"></i>
+                        <span>Equipe de travail</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Slide 3 -->
+            <div class="hero-carousel-bg-slide" style="--slide-image: url('{% static 'images/hero/slide3-reussite.jpg' %}');">
+                <div class="slide-main" style="--slide-image: url('{% static 'images/hero/slide3-reussite.jpg' %}');"></div>
+                <div class="slide-fallback">
+                    <div>
+                        <i class="fas fa-rocket text-4xl text-primary mb-3 block"></i>
+                        <span>Reussite entrepreneuriale</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Overlay amélioré -->
+    <div class="hero-overlay"></div>
+    
+    <!-- Dots du carrousel -->
+    <div class="carousel-dots">
+        <button class="carousel-dot active" aria-label="Slide 1" onclick="goToSlide(0)"></button>
+        <button class="carousel-dot" aria-label="Slide 2" onclick="goToSlide(1)"></button>
+        <button class="carousel-dot" aria-label="Slide 3" onclick="goToSlide(2)"></button>
+    </div>
+    
+    <!-- Contenu -->
+    <div class="hero-content">
+        <div class="w-full max-w-[1140px] mx-auto">
+            <div class="flex flex-col lg:flex-row items-center gap-10 lg:gap-14">
+                <!-- Left Content -->
+                <div class="lg:w-1/2 text-center lg:text-left">
+                    <div class="inline-block bg-primary-soft/20 backdrop-blur-sm text-primary text-xs font-bold tracking-wide uppercase px-4 py-1.5 rounded-pill mb-5 border border-primary/20">
+                        <i class="fas fa-robot mr-1"></i>IA pour PME africaines
+                    </div>
+                    
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight tracking-tight">
+                        Co-Gerant
+                    </h1>
+                    <h2 class="text-xl sm:text-2xl font-semibold text-white/80 mt-2">
+                        Votre copilote IA pour PME africaines
+                    </h2>
+                    
+                    <!-- Badges premium -->
+                    <div class="mt-4 flex justify-center lg:justify-start gap-3 flex-wrap">
+                        <span class="premium-badge">
+                            <i class="fas fa-robot"></i> IA Africaine
+                        </span>
+                        <span class="premium-badge">
+                            <i class="fas fa-chart-line"></i> Analyse des ventes
+                        </span>
+                        <span class="premium-badge">
+                            <i class="fas fa-users"></i> CRM Intelligent
+                        </span>
+                    </div>
+                    
+                    <p class="text-white/70 text-base mt-5 leading-relaxed max-w-lg mx-auto lg:mx-0">
+                        Gestion de la relation client, suivi des ventes, communication digitale 
+                        et aide a la decision strategique, le tout orchestre par une intelligence 
+                        artificielle adaptee a votre secteur d'activite.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 mt-8 justify-center lg:justify-start">
+                        <a href="{% url 'core:inscription' %}" class="btn-glass-primary text-center text-base px-8 py-3.5">
+                            <i class="fas fa-rocket mr-2"></i>Commencer gratuitement
+                        </a>
+                        <a href="{% url 'core:connexion' %}" class="btn-glass text-center text-base px-8 py-3.5">
+                            <i class="fas fa-sign-in-alt mr-2"></i>Se connecter
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Right Content - 4 Agents Cards -->
+                <div class="lg:w-1/2 w-full">
+                    <div class="glass-card p-6 sm:p-7 text-center">
+                        <div class="flex items-center justify-center gap-2 mb-4">
+                            <i class="fas fa-brain text-2xl text-primary"></i>
+                            <p class="text-white/70 text-sm font-medium">4 agents IA specialises a votre service</p>
+                        </div>
+                        <div class="grid grid-cols-4 gap-2">
+                            <div class="glass-card-light px-2 py-3 text-center rounded-lg flex flex-col items-center gap-1.5">
+                                <i class="fas fa-users text-success text-lg"></i>
+                                <span class="text-xs font-semibold text-white/90">CRM</span>
+                            </div>
+                            <div class="glass-card-light px-2 py-3 text-center rounded-lg flex flex-col items-center gap-1.5">
+                                <i class="fas fa-chart-simple text-info text-lg"></i>
+                                <span class="text-xs font-semibold text-white/90">Ventes</span>
+                            </div>
+                            <div class="glass-card-light px-2 py-3 text-center rounded-lg flex flex-col items-center gap-1.5">
+                                <i class="fas fa-bullhorn text-warning text-lg"></i>
+                                <span class="text-xs font-semibold text-white/90">Communication</span>
+                            </div>
+                            <div class="glass-card-light px-2 py-3 text-center rounded-lg flex flex-col items-center gap-1.5">
+                                <i class="fas fa-lightbulb text-primary text-lg"></i>
+                                <span class="text-xs font-semibold text-white/90">Decision</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-16 px-4 bg-gray-50">
+    <div class="max-w-[1140px] mx-auto">
+        <h2 class="text-3xl font-extrabold text-center text-gray-900 mb-12">Pourquoi Co-Gerant ?</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Feature 1 -->
+            <div class="glass-card p-6 text-center hover:-translate-y-1 transition-all duration-200 animate-fade-in-up">
+                <div class="w-14 h-14 rounded-xl bg-primary-soft text-primary-dark flex items-center justify-center text-2xl mx-auto mb-4">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h5 class="font-bold text-gray-900 text-base">CRM Intelligent</h5>
+                <p class="text-gray-500 text-sm mt-2 leading-relaxed">Gerez vos clients, segments et scoring RFM avec l'aide de l'IA</p>
+            </div>
+            
+            <!-- Feature 2 -->
+            <div class="glass-card p-6 text-center hover:-translate-y-1 transition-all duration-200 animate-fade-in-up" style="animation-delay: 0.1s;">
+                <div class="w-14 h-14 rounded-xl bg-info-bg text-info flex items-center justify-center text-2xl mx-auto mb-4">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h5 class="font-bold text-gray-900 text-base">Analyse des Ventes</h5>
+                <p class="text-gray-500 text-sm mt-2 leading-relaxed">Suivez vos performances et obtenez des previsions intelligentes</p>
+            </div>
+            
+            <!-- Feature 3 -->
+            <div class="glass-card p-6 text-center hover:-translate-y-1 transition-all duration-200 animate-fade-in-up" style="animation-delay: 0.2s;">
+                <div class="w-14 h-14 rounded-xl bg-warning-bg text-warning flex items-center justify-center text-2xl mx-auto mb-4">
+                    <i class="fas fa-bullhorn"></i>
+                </div>
+                <h5 class="font-bold text-gray-900 text-base">Communication</h5>
+                <p class="text-gray-500 text-sm mt-2 leading-relaxed">Generez des contenus adaptes a votre secteur et a vos objectifs</p>
+            </div>
+            
+            <!-- Feature 4 -->
+            <div class="glass-card p-6 text-center hover:-translate-y-1 transition-all duration-200 animate-fade-in-up" style="animation-delay: 0.3s;">
+                <div class="w-14 h-14 rounded-xl bg-primary-soft text-primary-dark flex items-center justify-center text-2xl mx-auto mb-4">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <h5 class="font-bold text-gray-900 text-base">Aide a la Decision</h5>
+                <p class="text-gray-500 text-sm mt-2 leading-relaxed">Des recommandations strategiques basees sur vos donnees</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-16 px-4">
+    <div class="max-w-[1140px] mx-auto">
+        <div class="glass-card p-8 sm:p-12 text-center relative overflow-hidden">
+            <div class="relative z-10">
+                <h3 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-3">Pret a transformer votre entreprise ?</h3>
+                <p class="text-gray-500 text-base max-w-lg mx-auto mb-6">
+                    Rejoignez les PME africaines qui utilisent deja Co-Gerant pour piloter leur croissance
+                </p>
+                <a href="{% url 'core:inscription' %}" class="btn-glass-primary inline-block text-base px-10 py-3.5">
+                    <i class="fas fa-arrow-right mr-2"></i>Demarrer maintenant
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    // Contrôle manuel du carrousel
+    let currentSlide = 0;
+    const slides = document.querySelector('.hero-carousel-bg-slides');
+    const dots = document.querySelectorAll('.carousel-dot');
+    const totalSlides = 3;
+    let timeoutId;
+    let isPlaying = true;
+    
+    function goToSlide(index) {
+        if (index < 0) index = 0;
+        if (index >= totalSlides) index = totalSlides - 1;
+        
+        currentSlide = index;
+        slides.style.transform = `translateX(-${index * 33.333}%)`;
+        slides.style.animation = 'none';
+        
+        dots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === index);
+        });
+    }
+    
+    // Navigation avec les dots
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', function() {
+            clearTimeout(timeoutId);
+            slides.style.animation = 'none';
+            isPlaying = false;
+            goToSlide(index);
+            
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(function() {
+                slides.style.animation = 'carousel-bg-slide 15s ease-in-out infinite';
+                isPlaying = true;
+            }, 8000);
+        });
+    });
+    
+    // Pause au survol
+    const heroSection = document.querySelector('.hero-fullscreen');
+    
+    heroSection.addEventListener('mouseenter', function() {
+        if (isPlaying) {
+            slides.style.animationPlayState = 'paused';
+        }
+    });
+    
+    heroSection.addEventListener('mouseleave', function() {
+        if (isPlaying) {
+            slides.style.animationPlayState = 'running';
+        }
+    });
+</script>
+{% endblock %}
