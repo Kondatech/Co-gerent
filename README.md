@@ -1,16 +1,4 @@
-1. DESCRIPTION COURTE (Short Description)
-Version simple :
 
-text
-Co-Gérant - Copilote IA pour PME africaines (Django + LangGraph + OpenAI)
-Version avec emojis :
-
-text
-🤖 Co-Gérant - Copilote IA pour PME africaines | Django · LangGraph · OpenAI
-2. DESCRIPTION LONGUE (README.md)
-Voici le contenu complet à mettre dans ton fichier README.md :
-
-markdown
 # 🤖 Co-Gérant - Copilote IA pour PME africaines
 
 Co-Gérant est un assistant intelligent (copilote IA) destiné aux PME africaines, combinant un système de gestion (CRM, Ventes) avec une intelligence artificielle orchestrée par LangGraph.
