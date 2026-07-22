@@ -1,0 +1,16 @@
+.git
+.claude/
+venv/
+node_modules/
+__pycache__/
+*.pyc
+.env
+db.sqlite3
+media/
+staticfiles/
+static/css/output.css
+*.log
+.pytest_cache/
+.vscode/
+.idea/
+.DS_Store

@@ -18,6 +18,7 @@ Co-Gérant est un assistant intelligent (copilote IA) destiné aux PME africaine
 - [Structure du projet](#-structure-du-projet)
 - [Sprints réalisés](#-sprints-réalisés)
 - [Tests](#-tests)
+- [Docker](#-docker)
 - [Déploiement](#-déploiement)
 - [Prochaines mises à jour](#-prochaines-mises-à-jour)
 - [Mettre à jour le dépôt](#-mettre-à-jour-le-dépôt)
@@ -207,16 +208,36 @@ pytest
 pytest --cov=agents --cov=crm --cov=ventes
 ```
 
+## 🐳 Docker
+
+Le projet se lance entièrement avec Docker Compose : Django (Gunicorn), PostgreSQL, Redis, un worker Celery et Celery Beat.
+
+```bash
+# 1. Créer le fichier d'environnement
+cp .env.example .env
+# Modifier .env (clé OpenAI, identifiants de base de données, etc.)
+
+# 2. Construire les images et démarrer tous les services
+docker compose up --build
+
+# L'application est ensuite disponible sur http://localhost:8000/
+
+# 3. Créer un superutilisateur (dans un autre terminal)
+docker compose exec web python manage.py createsuperuser
+```
+
+Le service `web` applique automatiquement les migrations et compile les fichiers statiques au démarrage. Les données PostgreSQL, Redis et les fichiers médias sont conservés dans des volumes Docker nommés (`postgres_data`, `redis_data`, `media_data`).
+
 ## 🚀 Déploiement
 
-### Accès distant avec ngrok (démonstration)
+### Accès distant avec ngrok (démonstration rapide, sans Docker)
 ```bash
 python manage.py runserver
 # Dans un autre terminal
 ngrok http 8000
 ```
 
-> Voir la discussion sur l'hébergement pour une mise en production (Celery/Redis/PostgreSQL en services persistants — Railway ou Render sont mieux adaptés que les plateformes serverless).
+> Pour une mise en production réelle, préférez une plateforme qui héberge des services persistants (Railway, Render) plutôt qu'une plateforme serverless comme Vercel, à cause du worker Celery et de Celery Beat qui doivent tourner en continu.
 
 ## 📋 Prochaines mises à jour
 
