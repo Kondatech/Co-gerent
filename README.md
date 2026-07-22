@@ -339,21 +339,9 @@ machine-learning
 
 python
 
-6. COMMANDES POUR LE PREMIER PUSH
-powershell
-# 1. Créer le README.md
-New-Item -Path README.md -ItemType File -Force
 
-# 2. Copier le contenu du README ci-dessus dans le fichier
+# 1. Lier au dépôt distant
+git remote add origin https://github.com/Kondatech/Co-gerent.git
 
-# 3. Ajouter les fichiers
-git add .
-
-# 4. Commit
-git commit -m "Initial commit: Co-Gerant - Copilote IA pour PME africaines"
-
-# 5. Lier au dépôt distant
-git remote add origin https://github.com/TON_USERNAME/cogerent.git
-
-# 6. Pusher
+# 2. Pusher
 git push -u origin main
